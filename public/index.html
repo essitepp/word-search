@@ -7,7 +7,19 @@
     <title>Document</title>
 </head>
 <body>
-    <input type="text">
-    <button>search</button>
+    <form action="/search">
+        <input type="text" name="word">
+        <button>search</button>
+    </form>
+
+<script type="text/javscript" src="/lib/jquery/jquery.min.js">
+    $(document).ready(() => {
+        $('button').on('click', e => {
+            e.preventDefault()
+            word = $('input[name='word']').val()
+            $.get('search', {'word': word})
+        })
+    })
+</script>
 </body>
 </html>
