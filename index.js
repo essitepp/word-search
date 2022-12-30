@@ -3,35 +3,40 @@ const path = require('path')
 const express = require('express')
 const morgan = require('morgan')
 const buildTrie = require('./word-trie.js')
-
 const app = express()
 
+app.set('view engine', 'ejs')
+
 app.use(morgan('dev'))
-app.use(express.static('public'))
 
 app.use(
 	'/lib/jquery',
 	express.static(path.join(__dirname, 'node_modules/jquery/dist'))
 )
 
-let trie
+let compactTrie, db
 
 app.use(async (req, res, next) => {
-	if (!trie) {
-		trie = await buildTrie()
-	}
+	if (!compactTrie) ({ compactTrie, db } = await buildTrie())
 	next()
 })
 
 app.get('/', (req, res) => {
-	res.sendFile('index.html')
+	res.render('index.ejs')
 })
 
 app.get('/search', (req, res) => {
 	let searchWord = req.query.word
-	let searchResult = trie.get(searchWord)
-	console.log(searchResult)
-	res.send()
+	let searchResult = compactTrie.findAllOccurrences(searchWord)
+	let occurrences = []
+	// could make here a db call
+	for (let i = 0; i < searchResult.length; i++) {
+		let string = db[Number([searchResult[i]])]
+		occurrences.push(string.substring(0, string.length - 1)) // removes the dollar sign
+	}
+
+	console.log(occurrences)
+	res.render('index.ejs', { occurrences: occurrences })
 })
 
 app.listen(process.env.PORT || 3000)
