@@ -1,9 +1,10 @@
 const readline = require('readline')
 const fs = require('fs')
-const { Trie } = require('./trie.js')
+const { CompactTrie } = require('./compact-trie.js')
 
 const buildTrie = async () => {
-	const trie = new Trie()
+	const compactTrie = new CompactTrie()
+	let db = []
 
 	const interface = readline.createInterface({
 		input: fs.createReadStream('words.txt'),
@@ -13,7 +14,7 @@ const buildTrie = async () => {
 	// use first 200 words
 	for await (const line of interface) {
 		if (counter >= 200) interface.close()
-		trie.put(line, counter)
+		db.push(line + '$')
 		counter++
 	}
 
@@ -21,7 +22,9 @@ const buildTrie = async () => {
 		process.exit(0)
 	})
 
-	return trie
+	compactTrie.insert(db)
+
+	return { compactTrie, db }
 }
 
 module.exports = buildTrie

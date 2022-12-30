@@ -12,6 +12,16 @@
         <button>search</button>
     </form>
 
+    <% if (locals.occurrences) {  %> 
+        <ul>
+            <% for (let i = 0; i < occurrences.length; i++) { %>
+                <li>
+                    <%= occurrences[i]  %> 
+                </li>
+            <% } %> 
+        </ul>
+    <% } %> 
+
 <script type="text/javscript" src="/lib/jquery/jquery.min.js">
     $(document).ready(() => {
         $('button').on('click', e => {
