@@ -5,10 +5,39 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
+    <style>
+        .autocomplete {
+          position: relative;
+          display: inline-block;
+        }
+
+        .autocomplete-items {
+          position: absolute;
+          border: 1px solid #d4d4d4;
+          border-bottom: none;
+          border-top: none;
+          z-index: 99;
+          left: 0;
+          right: 0;
+        }
+
+        .autocomplete-items div {
+          padding: 5px;
+          cursor: default;
+          background-color: #fff;
+          border-bottom: 1px solid #d4d4d4;
+        }
+
+        .autocomplete-items div:hover {
+          background-color: #e9e9e9;
+        }
+    </style>
 </head>
 <body>
     <form action="/search">
-        <input type="text" name="word">
+        <div class="autocomplete">
+            <input type="text" name="word" autocomplete="off" id="word">
+        </div>
         <button>search</button>
     </form>
 
@@ -21,6 +50,63 @@
             <% } %> 
         </ul>
     <% } %> 
+
+<script>
+    const autocomplete = (input) => {
+        input.addEventListener("input", async (e) => {
+            if (!input.value) {
+                closeLists()
+                return
+            }
+
+            const occurrences = await getOccurrences(input.value)
+            const options = occurrences.slice(0, 5)
+
+            list = document.createElement("div")
+            list.setAttribute("class", "autocomplete-items")
+            input.parentNode.appendChild(list)
+
+            for (i = 0; i < options.length; i++) {
+                option = document.createElement("div")
+                option.innerHTML = options[i]
+                option.innerHTML += "<input type='hidden' value='" + options[i] + "'>"
+
+                option.addEventListener("click", (e) => {
+                    input.value = option.getElementsByTagName("input")[0].value
+                })
+                list.appendChild(option)
+            }
+            closeLists(list)
+        })
+
+        input.addEventListener("keydown", (e) => {
+            if (e.key === "Escape") {
+                input.value = ""
+                closeLists()
+            }
+        })
+
+        const getOccurrences = async (word) => {
+            const response = await fetch(`/words?${new URLSearchParams({prefix: word})}`)
+            const data = response.json()
+            return data
+        }
+
+        const closeLists = (element) => {
+            const lists = document.getElementsByClassName("autocomplete-items")
+            for (let i = 0; i < lists.length; i++) {
+                if (lists[i] !== element) {
+                    lists[i].parentNode.removeChild(lists[i])
+                }
+            }
+        }
+
+        document.addEventListener("click", e => {
+            closeLists()
+        })
+    }
+    autocomplete(document.getElementById("word"))
+</script>
 
 <script type="text/javscript" src="/lib/jquery/jquery.min.js">
     $(document).ready(() => {

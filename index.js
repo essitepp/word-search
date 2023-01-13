@@ -26,7 +26,17 @@ app.get('/', (req, res) => {
 })
 
 app.get('/search', (req, res) => {
-	let searchWord = req.query.word
+	const occurrences = getOccurrences(req.query.word)
+	console.log(occurrences)
+	res.render('index.ejs', { occurrences: occurrences })
+})
+
+app.get('/words', (req, res) => {
+	const occurrences = getOccurrences(req.query.prefix)
+	res.json(occurrences)
+})
+
+const getOccurrences = searchWord => {
 	let searchResult = compactTrie.findAllOccurrences(searchWord)
 	let occurrences = []
 	// could make here a db call
@@ -34,9 +44,7 @@ app.get('/search', (req, res) => {
 		let string = db[Number([searchResult[i]])]
 		occurrences.push(string.substring(0, string.length - 1)) // removes the dollar sign
 	}
-
-	console.log(occurrences)
-	res.render('index.ejs', { occurrences: occurrences })
-})
+	return occurrences
+}
 
 app.listen(process.env.PORT || 3000)
